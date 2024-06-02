@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lorem Ipsum.">
+    <title>Lorem Ipsum</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.5rem;
+      }
+
+      h1,
+      h2 {
+        font-family: "Garamond", serif;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      article,
+      footer {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      article {
+        margin-top: 3rem;
+      }
+
+      footer {
+        margin-bottom: 3rem;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      {{.Style}}
+    </style>
+  </head>
+  <body>
+    <article>
+      {{.Content}}
+    </article>
+    <footer>
+      <hr />
+      2024 © Stanislav Gatev
+    </footer>
+  </body>
+</html>

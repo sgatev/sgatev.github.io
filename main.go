@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/formatters/html"
+	chromahtml "github.com/alecthomas/chroma/formatters/html"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/gomarkdown/markdown"
@@ -19,10 +19,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 )
 
 var (
-	htmlCodeFormatter *html.Formatter
+	htmlCodeFormatter *chromahtml.Formatter
 	highlightStyle    *chroma.Style
 )
 
@@ -85,11 +86,42 @@ func mdToHtml(md []byte) []byte {
 }
 
 func main() {
+	postTempl, err := template.New("post.html").ParseFiles("templates/post.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("text/html", minifyhtml.Minify)
 
-	htmlCodeFormatter = html.New(html.WithClasses(true), html.TabWidth(2))
+	processPost := func(in, out string, args map[string]string) (err error) {
+		md, err := ioutil.ReadFile(in)
+		if err != nil {
+			return err
+		}
+
+		args["Content"] = string(mdToHtml(md))
+
+		w, err := os.Create(out)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err = w.Close()
+		}()
+
+		mw := m.Writer("text/html", w)
+		defer func() {
+			err = mw.Close()
+		}()
+
+		return postTempl.Execute(mw, args)
+	}
+
+	htmlCodeFormatter = chromahtml.New(
+		chromahtml.WithClasses(true),
+		chromahtml.TabWidth(2))
 	if htmlCodeFormatter == nil {
 		log.Fatal("chroma: couldn't create HTML formatter")
 	}
@@ -115,18 +147,12 @@ func main() {
 	}
 
 	for _, post := range posts {
-		postMdContent, err := ioutil.ReadFile(filepath.Join(postsDir, post.Name()))
-		if err != nil {
-			log.Fatal(err)
+		in := filepath.Join(postsDir, post.Name())
+		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
+		args := map[string]string{
+			"Style": codeHighlightStyles.String(),
 		}
-
-		postHtmlContent := fmt.Sprintf(postHtmlTemplate, codeHighlightStyles.String(), mdToHtml(postMdContent))
-		postHtmlContent, err = m.String("text/html", postHtmlContent)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if err := ioutil.WriteFile(filepath.Join(genDir, "post.html"), []byte(postHtmlContent), 0644); err != nil {
+		if err := processPost(in, out, args); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -184,64 +210,8 @@ const indexHtmlContent = `<!doctype html>
       <h1>Posts</h1>
       <hr />
       <section>
-        <h2><a href="/post.html">Lorem Ipsum</a></h2>
+        <h2><a href="/lipsum.html">Lorem Ipsum</a></h2>
       </section>
-    </article>
-    <footer>
-      <hr />
-      2024 © Stanislav Gatev
-    </footer>
-  </body>
-</html>
-`
-
-const postHtmlTemplate = `<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Lorem Ipsum.">
-    <title>Lorem Ipsum</title>
-    <style>
-      body {
-        font-family: "Arial", sans-serif;
-        line-height: 1.5rem;
-      }
-
-      h1,
-      h2 {
-        font-family: "Garamond", serif;
-      }
-
-      h1 {
-        font-size: 2.5rem;
-      }
-
-      article,
-      footer {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      article {
-        margin-top: 3rem;
-      }
-
-      footer {
-        margin-bottom: 3rem;
-      }
-
-      a {
-        text-decoration: none;
-        color: inherit;
-      }
-      %s
-    </style>
-  </head>
-  <body>
-    <article>
-      %s
     </article>
     <footer>
       <hr />
