@@ -107,6 +107,10 @@ const indexHtmlContent = `<!doctype html>
         margin-top: 3rem;
       }
 
+      footer {
+        margin-bottom: 3rem;
+      }
+
       a {
         text-decoration: none;
         color: inherit;
@@ -160,6 +164,10 @@ const postHtmlTemplate = `<!doctype html>
 
       article {
         margin-top: 3rem;
+      }
+
+      footer {
+        margin-bottom: 3rem;
       }
 
       a {
