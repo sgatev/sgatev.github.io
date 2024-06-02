@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func renderTitle(w io.Writer, node ast.Node, entering bool) {
@@ -31,12 +32,12 @@ func mdToHtmlRenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStat
 	return ast.GoToNext, false
 }
 
-func mdToHtml(md string) []byte {
+func mdToHtml(md []byte) []byte {
 	p := parser.NewWithExtensions(
 		parser.CommonExtensions |
 			parser.AutoHeadingIDs |
 			parser.NoEmptyLineBeforeBlock)
-	doc := p.Parse([]byte(md))
+	doc := p.Parse(md)
 	r := html.NewRenderer(html.RendererOptions{
 		Flags:          html.CommonFlags | html.HrefTargetBlank,
 		RenderNodeHook: mdToHtmlRenderHook,
@@ -45,15 +46,30 @@ func mdToHtml(md string) []byte {
 }
 
 func main() {
-	if err := os.Mkdir("gen", os.ModePerm); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile("gen/index.html", []byte(indexHtmlContent), 0644); err != nil {
+	const genDir = "gen"
+	if err := os.Mkdir(genDir, os.ModePerm); err != nil {
 		log.Fatal(err)
 	}
 
-	postHtmlContent := fmt.Sprintf(postHtmlTemplate, mdToHtml(postMdContent))
-	if err := ioutil.WriteFile("gen/post.html", []byte(postHtmlContent), 0644); err != nil {
+	const postsDir = "posts"
+	posts, err := os.ReadDir(postsDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, post := range posts {
+		postMdContent, err := ioutil.ReadFile(filepath.Join(postsDir, post.Name()))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		postHtmlContent := fmt.Sprintf(postHtmlTemplate, mdToHtml(postMdContent))
+		if err := ioutil.WriteFile(filepath.Join(genDir, "post.html"), []byte(postHtmlContent), 0644); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if err := ioutil.WriteFile(filepath.Join(genDir, "index.html"), []byte(indexHtmlContent), 0644); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -162,54 +178,4 @@ const postHtmlTemplate = `<!doctype html>
     </footer>
   </body>
 </html>
-`
-
-const postMdContent = `# Lorem Ipsum
-
-## Lorem ipsum dolor sit
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-vestibulum commodo ligula vitae laoreet. Nam mollis in nisi eget
-vulputate. Nulla eget euismod diam, eu tincidunt velit. Vivamus
-tincidunt odio lobortis elit laoreet, a imperdiet tellus congue. In id
-neque ut mauris suscipit condimentum. Phasellus pretium lacinia dapibus.
-Vivamus at nisi non nulla posuere malesuada at non justo. Suspendisse in
-maximus quam, id mollis elit. Vestibulum tempor rhoncus ante, ut
-sollicitudin lacus gravida id. Nullam ac orci rutrum, vulputate velit
-at, maximus nunc. Vestibulum mollis lectus eget mauris placerat, at
-gravida tellus ullamcorper. Praesent suscipit nulla et auctor accumsan.
-Suspendisse ultricies convallis est, sed tristique dui egestas ut.
-Maecenas convallis scelerisque orci vel mollis. In condimentum, lorem
-quis aliquet facilisis, dui dolor efficitur metus, eget elementum turpis
-lectus non urna. Curabitur porta felis id dignissim pulvinar.
-
-## Nulla euismod pellentesque
-
-Nulla euismod pellentesque vehicula. Nulla purus elit, mattis id rhoncus
-eu, fermentum efficitur nisl. Nunc mollis lorem non leo accumsan
-pretium. Fusce in tempus dui. Interdum et malesuada fames ac ante ipsum
-primis in faucibus. Aliquam vel libero vitae augue luctus hendrerit.
-Nulla tincidunt facilisis lorem, sed congue mauris tempus ac. Vivamus
-egestas ante id leo imperdiet gravida sit amet tristique dolor. Proin
-feugiat magna eu tortor convallis scelerisque in in dolor. Cras risus
-sapien, posuere quis nisi nec, dapibus laoreet lorem. Integer ut felis
-non urna tincidunt dapibus ut nec purus. Duis justo diam, hendrerit
-vitae nibh ut, eleifend molestie lacus. Sed at eros non ipsum
-scelerisque lacinia vel sed est. Quisque et metus fermentum, dignissim
-arcu non, placerat diam.
-
-## Morbi ac est accumsan
-
-Morbi ac est accumsan, mattis justo vel, sodales est. Morbi interdum,
-ipsum ac malesuada accumsan, odio turpis sagittis purus, nec eleifend
-arcu purus et arcu. Nam tristique fringilla lectus, vitae molestie eros
-ultricies vel. Curabitur tincidunt erat vel eros tincidunt egestas.
-Integer aliquet condimentum elit. Maecenas viverra dolor vehicula,
-consectetur libero a, mollis ante. Nam nec feugiat enim, id congue ex.
-Nulla metus enim, iaculis eget nunc sit amet, blandit congue justo.
-Proin nec neque eu metus tincidunt porta. Nulla hendrerit urna semper
-quam vehicula, eu hendrerit sapien accumsan. Nullam venenatis tortor et
-semper semper. Maecenas sit amet mollis elit. Nullam in congue elit.
-Integer tincidunt nec justo non posuere. Donec vel erat in turpis
-tincidunt euismod.
 `
