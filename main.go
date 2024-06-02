@@ -85,61 +85,51 @@ func mdToHtml(md []byte) []byte {
 	return markdown.Render(doc, r)
 }
 
+type htmlRenderer struct {
+	m *minify.M
+}
+
+func (p *htmlRenderer) renderHtml(
+	path string, templ *template.Template, args map[string]string) (err error) {
+
+	w, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		err = w.Close()
+	}()
+
+	mw := p.m.Writer("text/html", w)
+	defer func() {
+		err = mw.Close()
+	}()
+
+	return templ.Execute(mw, args)
+}
+
+func makeHtmlRenderer() *htmlRenderer {
+	p := &htmlRenderer{}
+
+	p.m = minify.New()
+	p.m.AddFunc("text/css", css.Minify)
+	p.m.AddFunc("text/html", minifyhtml.Minify)
+
+	return p
+}
+
 func main() {
-	indexTempl, err := template.New("index.html").ParseFiles("templates/index.html")
+	indexTempl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	postTempl, err := template.New("post.html").ParseFiles("templates/post.html")
+	postTempl, err := template.ParseFiles("templates/post.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	m := minify.New()
-	m.AddFunc("text/css", css.Minify)
-	m.AddFunc("text/html", minifyhtml.Minify)
-
-	processIndex := func(out string, args map[string]string) (err error) {
-		w, err := os.Create(out)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err = w.Close()
-		}()
-
-		mw := m.Writer("text/html", w)
-		defer func() {
-			err = mw.Close()
-		}()
-
-		return indexTempl.Execute(mw, args)
-	}
-
-	processPost := func(in, out string, args map[string]string) (err error) {
-		md, err := ioutil.ReadFile(in)
-		if err != nil {
-			return err
-		}
-
-		args["Content"] = string(mdToHtml(md))
-
-		w, err := os.Create(out)
-		if err != nil {
-			return err
-		}
-		defer func() {
-			err = w.Close()
-		}()
-
-		mw := m.Writer("text/html", w)
-		defer func() {
-			err = mw.Close()
-		}()
-
-		return postTempl.Execute(mw, args)
-	}
+	r := makeHtmlRenderer()
 
 	htmlCodeFormatter = chromahtml.New(
 		chromahtml.WithClasses(true),
@@ -170,16 +160,24 @@ func main() {
 
 	for _, post := range posts {
 		in := filepath.Join(postsDir, post.Name())
+		md, err := ioutil.ReadFile(in)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
 		args := map[string]string{
-			"Style": codeHighlightStyles.String(),
+			"Style":   codeHighlightStyles.String(),
+			"Content": string(mdToHtml(md)),
 		}
-		if err := processPost(in, out, args); err != nil {
+
+		if err := r.renderHtml(out, postTempl, args); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if err := processIndex(filepath.Join(genDir, "index.html"), map[string]string{}); err != nil {
+	indexOut := filepath.Join(genDir, "index.html")
+	if err := r.renderHtml(indexOut, indexTempl, map[string]string{}); err != nil {
 		log.Fatal(err)
 	}
 }
