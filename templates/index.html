@@ -1,22 +1,7 @@
-<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Posts by Stanislav Gatev.">
-    <title>Posts</title>
-    <style>
-      {{template "structure.css"}}
-    </style>
-  </head>
-  <body>
-    <article>
-      <h1>Posts</h1>
-      <hr />
-      <section>
-        <h2><a href="/lipsum.html">Lorem Ipsum</a></h2>
-      </section>
-    </article>
-    {{template "footer.html"}}
-  </body>
-</html>
+{{define "article"}}
+<h1>Posts</h1>
+<hr />
+<section>
+  <h2><a href="/lipsum.html">Lorem Ipsum</a></h2>
+</section>
+{{end}}

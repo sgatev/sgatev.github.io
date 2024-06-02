@@ -92,22 +92,19 @@ type htmlRenderer struct {
 }
 
 func (p *htmlRenderer) renderHtml(
-	path string, templ *template.Template, args map[string]string) (err error) {
+	path string, templ *template.Template, args map[string]string) error {
 
-	w, err := os.Create(path)
+	var s strings.Builder
+	if err := templ.Execute(&s, args); err != nil {
+		return err
+	}
+
+	ms, err := p.m.String("text/html", s.String())
 	if err != nil {
 		return err
 	}
-	defer func() {
-		err = w.Close()
-	}()
 
-	mw := p.m.Writer("text/html", w)
-	defer func() {
-		err = mw.Close()
-	}()
-
-	return templ.Execute(mw, args)
+	return ioutil.WriteFile(path, []byte(ms), 0644)
 }
 
 func makeHtmlRenderer() *htmlRenderer {
@@ -115,23 +112,28 @@ func makeHtmlRenderer() *htmlRenderer {
 
 	p.m = minify.New()
 	p.m.AddFunc("text/css", css.Minify)
-	p.m.AddFunc("text/html", minifyhtml.Minify)
+	p.m.Add("text/html", &minifyhtml.Minifier{
+		KeepEndTags: true,
+	})
 
 	return p
 }
 
-func main() {
-	indexTempl, err := template.ParseFiles(
-		"templates/index.html", "templates/footer.html", "templates/structure.css")
-	if err != nil {
-		log.Fatal(err)
-	}
+func makeLayoutTemplate() *template.Template {
+	return template.Must(template.ParseFiles(
+		"templates/layout.html",
+		"templates/footer.html",
+		"templates/structure.css"))
+}
 
-	postTempl, err := template.ParseFiles(
-		"templates/post.html", "templates/footer.html", "templates/structure.css")
-	if err != nil {
-		log.Fatal(err)
-	}
+func makePostTemplate(
+	layoutTempl *template.Template, content string) *template.Template {
+
+	return template.Must(layoutTempl.New("article").Parse(content)).Lookup("layout.html")
+}
+
+func main() {
+	layoutTemplate := makeLayoutTemplate()
 
 	r := makeHtmlRenderer()
 
@@ -176,12 +178,20 @@ func main() {
 			"CurrentYear":        strconv.Itoa(time.Now().Year()),
 		}
 
+		postTempl := makePostTemplate(
+			template.Must(layoutTemplate.Clone()), string(mdToHtml(md)))
+
 		if err := r.renderHtml(out, postTempl, args); err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	indexOut := filepath.Join(genDir, "index.html")
+	indexTempl := template.Must(template.ParseFiles(
+		"templates/layout.html",
+		"templates/index.html",
+		"templates/footer.html",
+		"templates/structure.css"))
 	indexArgs := map[string]string{
 		"CurrentYear": strconv.Itoa(time.Now().Year()),
 	}
