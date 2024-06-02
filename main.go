@@ -10,6 +10,9 @@ import (
 	"github.com/gomarkdown/markdown/ast"
 	mdhtml "github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	minifyhtml "github.com/tdewolff/minify/v2/html"
 	"io"
 	"io/ioutil"
 	"log"
@@ -82,6 +85,10 @@ func mdToHtml(md []byte) []byte {
 }
 
 func main() {
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", minifyhtml.Minify)
+
 	htmlCodeFormatter = html.New(html.WithClasses(true), html.TabWidth(2))
 	if htmlCodeFormatter == nil {
 		log.Fatal("chroma: couldn't create HTML formatter")
@@ -114,6 +121,11 @@ func main() {
 		}
 
 		postHtmlContent := fmt.Sprintf(postHtmlTemplate, codeHighlightStyles.String(), mdToHtml(postMdContent))
+		postHtmlContent, err = m.String("text/html", postHtmlContent)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		if err := ioutil.WriteFile(filepath.Join(genDir, "post.html"), []byte(postHtmlContent), 0644); err != nil {
 			log.Fatal(err)
 		}
