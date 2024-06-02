@@ -18,8 +18,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
+	"time"
 )
 
 var (
@@ -171,6 +173,7 @@ func main() {
 		args := map[string]string{
 			"CodeHighlightStyle": codeHighlightStyle.String(),
 			"Content":            string(mdToHtml(md)),
+			"CurrentYear":        strconv.Itoa(time.Now().Year()),
 		}
 
 		if err := r.renderHtml(out, postTempl, args); err != nil {
@@ -179,7 +182,10 @@ func main() {
 	}
 
 	indexOut := filepath.Join(genDir, "index.html")
-	if err := r.renderHtml(indexOut, indexTempl, map[string]string{}); err != nil {
+	indexArgs := map[string]string{
+		"CurrentYear": strconv.Itoa(time.Now().Year()),
+	}
+	if err := r.renderHtml(indexOut, indexTempl, indexArgs); err != nil {
 		log.Fatal(err)
 	}
 }
