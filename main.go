@@ -119,12 +119,14 @@ func makeHtmlRenderer() *htmlRenderer {
 }
 
 func main() {
-	indexTempl, err := template.ParseFiles("templates/index.html")
+	indexTempl, err := template.ParseFiles(
+		"templates/index.html", "templates/structure.css")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	postTempl, err := template.ParseFiles("templates/post.html")
+	postTempl, err := template.ParseFiles(
+		"templates/post.html", "templates/structure.css")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -144,8 +146,8 @@ func main() {
 		log.Fatal(fmt.Sprintf("chroma: couldn't find style '%s'", highlightStyleName))
 	}
 
-	var codeHighlightStyles strings.Builder
-	htmlCodeFormatter.WriteCSS(&codeHighlightStyles, highlightStyle)
+	var codeHighlightStyle strings.Builder
+	htmlCodeFormatter.WriteCSS(&codeHighlightStyle, highlightStyle)
 
 	const genDir = "gen"
 	if err := os.Mkdir(genDir, os.ModePerm); err != nil {
@@ -167,8 +169,8 @@ func main() {
 
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
 		args := map[string]string{
-			"Style":   codeHighlightStyles.String(),
-			"Content": string(mdToHtml(md)),
+			"CodeHighlightStyle": codeHighlightStyle.String(),
+			"Content":            string(mdToHtml(md)),
 		}
 
 		if err := r.renderHtml(out, postTempl, args); err != nil {
