@@ -1,4 +1,79 @@
-<!doctype html>
+package main
+
+import (
+	"io/ioutil"
+	"log"
+	"os"
+)
+
+func main() {
+	if err := os.Mkdir("gen", os.ModePerm); err != nil {
+		log.Fatal(err)
+	}
+	if err := ioutil.WriteFile("gen/index.html", []byte(indexContent), 0644); err != nil {
+		log.Fatal(err)
+	}
+	if err := ioutil.WriteFile("gen/post.html", []byte(postContent), 0644); err != nil {
+		log.Fatal(err)
+	}
+}
+
+const indexContent = `<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Posts by Stanislav Gatev.">
+    <title>Posts</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        line-height: 1.5rem;
+      }
+
+      h1,
+      h2 {
+        font-family: "Garamond", serif;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      article,
+      footer {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      article {
+        margin-top: 3rem;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <article>
+      <h1>Posts</h1>
+      <hr />
+      <section>
+        <h2><a href="/post.html">Lorem Ipsum</a></h2>
+      </section>
+    </article>
+    <footer>
+      <hr />
+      2024 © Stanislav Gatev
+    </footer>
+  </body>
+</html>
+`
+
+const postContent = `<!doctype html>
 <html lang="en-US">
   <head>
     <meta charset="utf-8">
@@ -95,3 +170,4 @@
     </footer>
   </body>
 </html>
+`
