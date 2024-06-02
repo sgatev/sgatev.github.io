@@ -122,13 +122,13 @@ func makeHtmlRenderer() *htmlRenderer {
 
 func main() {
 	indexTempl, err := template.ParseFiles(
-		"templates/index.html", "templates/structure.css")
+		"templates/index.html", "templates/footer.html", "templates/structure.css")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	postTempl, err := template.ParseFiles(
-		"templates/post.html", "templates/structure.css")
+		"templates/post.html", "templates/footer.html", "templates/structure.css")
 	if err != nil {
 		log.Fatal(err)
 	}
