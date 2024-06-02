@@ -17,6 +17,12 @@ Maecenas convallis scelerisque orci vel mollis. In condimentum, lorem
 quis aliquet facilisis, dui dolor efficitur metus, eget elementum turpis
 lectus non urna. Curabitur porta felis id dignissim pulvinar.
 
+```cpp
+int foo() {
+  return 1;
+}
+```
+
 ## Nulla euismod pellentesque
 
 Nulla euismod pellentesque vehicula. Nulla purus elit, mattis id rhoncus

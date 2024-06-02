@@ -2,18 +2,28 @@ package main
 
 import (
 	"fmt"
+	"github.com/alecthomas/chroma"
+	"github.com/alecthomas/chroma/formatters/html"
+	"github.com/alecthomas/chroma/lexers"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
-	"github.com/gomarkdown/markdown/html"
+	mdhtml "github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func renderTitle(w io.Writer, node ast.Node, entering bool) {
+var (
+	htmlCodeFormatter *html.Formatter
+	highlightStyle    *chroma.Style
+)
+
+func renderTitle(w io.Writer, entering bool) {
 	if entering {
 		io.WriteString(w, "<h1>")
 	} else {
@@ -22,12 +32,38 @@ func renderTitle(w io.Writer, node ast.Node, entering bool) {
 	}
 }
 
-func mdToHtmlRenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
-	if h, ok := node.(*ast.Heading); ok {
-		if h.Level == 1 {
-			renderTitle(w, h, entering)
+func htmlCodeHighlight(w io.Writer, source, lang string) error {
+	l := lexers.Get(lang)
+	if l == nil {
+		l = lexers.Analyse(source)
+	}
+	if l == nil {
+		l = lexers.Fallback
+	}
+	l = chroma.Coalesce(l)
+
+	it, err := l.Tokenise(nil, source)
+	if err != nil {
+		return err
+	}
+	return htmlCodeFormatter.Format(w, highlightStyle, it)
+}
+
+func renderCode(w io.Writer, codeBlock *ast.CodeBlock) {
+	htmlCodeHighlight(w, string(codeBlock.Literal), string(codeBlock.Info))
+}
+
+func mdToHtmlRenderHook(
+	w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+
+	if heading, ok := node.(*ast.Heading); ok {
+		if heading.Level == 1 {
+			renderTitle(w, entering)
 			return ast.GoToNext, true
 		}
+	} else if code, ok := node.(*ast.CodeBlock); ok {
+		renderCode(w, code)
+		return ast.GoToNext, true
 	}
 	return ast.GoToNext, false
 }
@@ -38,14 +74,28 @@ func mdToHtml(md []byte) []byte {
 			parser.AutoHeadingIDs |
 			parser.NoEmptyLineBeforeBlock)
 	doc := p.Parse(md)
-	r := html.NewRenderer(html.RendererOptions{
-		Flags:          html.CommonFlags | html.HrefTargetBlank,
+	r := mdhtml.NewRenderer(mdhtml.RendererOptions{
+		Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
 		RenderNodeHook: mdToHtmlRenderHook,
 	})
 	return markdown.Render(doc, r)
 }
 
 func main() {
+	htmlCodeFormatter = html.New(html.WithClasses(true), html.TabWidth(2))
+	if htmlCodeFormatter == nil {
+		log.Fatal("chroma: couldn't create HTML formatter")
+	}
+
+	const highlightStyleName = "bw"
+	highlightStyle = styles.Get(highlightStyleName)
+	if highlightStyle == nil {
+		log.Fatal(fmt.Sprintf("chroma: couldn't find style '%s'", highlightStyleName))
+	}
+
+	var codeHighlightStyles strings.Builder
+	htmlCodeFormatter.WriteCSS(&codeHighlightStyles, highlightStyle)
+
 	const genDir = "gen"
 	if err := os.Mkdir(genDir, os.ModePerm); err != nil {
 		log.Fatal(err)
@@ -63,7 +113,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		postHtmlContent := fmt.Sprintf(postHtmlTemplate, mdToHtml(postMdContent))
+		postHtmlContent := fmt.Sprintf(postHtmlTemplate, codeHighlightStyles.String(), mdToHtml(postMdContent))
 		if err := ioutil.WriteFile(filepath.Join(genDir, "post.html"), []byte(postHtmlContent), 0644); err != nil {
 			log.Fatal(err)
 		}
@@ -174,6 +224,7 @@ const postHtmlTemplate = `<!doctype html>
         text-decoration: none;
         color: inherit;
       }
+      %s
     </style>
   </head>
   <body>
