@@ -86,6 +86,11 @@ func mdToHtml(md []byte) []byte {
 }
 
 func main() {
+	indexTempl, err := template.New("index.html").ParseFiles("templates/index.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	postTempl, err := template.New("post.html").ParseFiles("templates/post.html")
 	if err != nil {
 		log.Fatal(err)
@@ -94,6 +99,23 @@ func main() {
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("text/html", minifyhtml.Minify)
+
+	processIndex := func(out string, args map[string]string) (err error) {
+		w, err := os.Create(out)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err = w.Close()
+		}()
+
+		mw := m.Writer("text/html", w)
+		defer func() {
+			err = mw.Close()
+		}()
+
+		return indexTempl.Execute(mw, args)
+	}
 
 	processPost := func(in, out string, args map[string]string) (err error) {
 		md, err := ioutil.ReadFile(in)
@@ -157,66 +179,7 @@ func main() {
 		}
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(genDir, "index.html"), []byte(indexHtmlContent), 0644); err != nil {
+	if err := processIndex(filepath.Join(genDir, "index.html"), map[string]string{}); err != nil {
 		log.Fatal(err)
 	}
 }
-
-const indexHtmlContent = `<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Posts by Stanislav Gatev.">
-    <title>Posts</title>
-    <style>
-      body {
-        font-family: "Arial", sans-serif;
-        line-height: 1.5rem;
-      }
-
-      h1,
-      h2 {
-        font-family: "Garamond", serif;
-      }
-
-      h1 {
-        font-size: 2.5rem;
-      }
-
-      article,
-      footer {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      article {
-        margin-top: 3rem;
-      }
-
-      footer {
-        margin-bottom: 3rem;
-      }
-
-      a {
-        text-decoration: none;
-        color: inherit;
-      }
-    </style>
-  </head>
-  <body>
-    <article>
-      <h1>Posts</h1>
-      <hr />
-      <section>
-        <h2><a href="/lipsum.html">Lorem Ipsum</a></h2>
-      </section>
-    </article>
-    <footer>
-      <hr />
-      2024 © Stanislav Gatev
-    </footer>
-  </body>
-</html>
-`
