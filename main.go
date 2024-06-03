@@ -13,11 +13,13 @@ import (
 	"github.com/tdewolff/minify/v2"
 	"github.com/tdewolff/minify/v2/css"
 	minifyhtml "github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -115,6 +117,8 @@ func makeHtmlRenderer() *htmlRenderer {
 	p.m.Add("text/html", &minifyhtml.Minifier{
 		KeepEndTags: true,
 	})
+	p.m.AddFuncRegexp(
+		regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
 
 	return p
 }

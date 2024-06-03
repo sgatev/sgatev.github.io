@@ -11,10 +11,32 @@
     </style>
   </head>
   <body>
+    <button id="dark-mode-toggle" onClick="toggleDarkMode()"></button>
     <article>
       {{template "article" .}}
     </article>
     {{template "footer" .}}
+    <script>
+      function darkModeEnabled() {
+        return localStorage.getItem('darkModeEnabled') === 'true';
+      }
+
+      function setDarkMode(enabled) {
+        document.body.classList.toggle('dark-mode', enabled);
+
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        darkModeToggle.style.display = 'block';
+        darkModeToggle.innerHTML = enabled ? '☼' : '☽';
+
+        localStorage.setItem('darkModeEnabled', enabled ? 'true' : 'false');
+      }
+
+      function toggleDarkMode() {
+        setDarkMode(!darkModeEnabled());
+      }
+
+      setDarkMode(darkModeEnabled());
+    </script>
   </body>
 </html>
 {{end}}
