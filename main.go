@@ -76,17 +76,29 @@ func mdToHtmlRenderHook(
 	return ast.GoToNext, false
 }
 
-func mdToHtml(md []byte) []byte {
-	p := parser.NewWithExtensions(
-		parser.CommonExtensions |
-			parser.AutoHeadingIDs |
-			parser.NoEmptyLineBeforeBlock)
-	doc := p.Parse(md)
-	r := mdhtml.NewRenderer(mdhtml.RendererOptions{
-		Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
-		RenderNodeHook: mdToHtmlRenderHook,
+func getTitle(doc ast.Node) string {
+	var title string
+	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
+		h, ok := node.(*ast.Heading)
+		if !ok {
+			return ast.GoToNext
+		}
+		if h.Level != 1 {
+			return ast.GoToNext
+		}
+		if len(h.Children) != 1 {
+			return ast.GoToNext
+		}
+
+		t, ok := h.Children[0].(*ast.Text)
+		if !ok {
+			return ast.GoToNext
+		}
+
+		title = string(t.Literal)
+		return ast.Terminate
 	})
-	return markdown.Render(doc, r)
+	return title
 }
 
 type htmlRenderer struct {
@@ -94,7 +106,7 @@ type htmlRenderer struct {
 }
 
 func (p *htmlRenderer) renderHtml(
-	path string, templ *template.Template, args map[string]string) error {
+	path string, templ *template.Template, args any) error {
 
 	var s strings.Builder
 	if err := templ.Execute(&s, args); err != nil {
@@ -168,6 +180,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	postFiles := map[string]string{}
 	for _, post := range posts {
 		in := filepath.Join(postsDir, post.Name())
 		md, err := ioutil.ReadFile(in)
@@ -175,15 +188,30 @@ func main() {
 			log.Fatal(err)
 		}
 
-		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
+		p := parser.NewWithExtensions(
+			parser.CommonExtensions |
+				parser.AutoHeadingIDs |
+				parser.NoEmptyLineBeforeBlock)
+		doc := p.Parse(md)
+
+		outFile := strings.Replace(post.Name(), "md", "html", 1)
+		postFiles[getTitle(doc)] = outFile
+
+		mdr := mdhtml.NewRenderer(mdhtml.RendererOptions{
+			Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
+			RenderNodeHook: mdToHtmlRenderHook,
+		})
+		html := markdown.Render(doc, mdr)
+
+		out := filepath.Join(genDir, outFile)
 		args := map[string]string{
 			"CodeHighlightStyle": codeHighlightStyle.String(),
-			"Content":            string(mdToHtml(md)),
+			"Content":            string(html),
 			"CurrentYear":        strconv.Itoa(time.Now().Year()),
 		}
 
 		postTempl := makePostTemplate(
-			template.Must(layoutTemplate.Clone()), string(mdToHtml(md)))
+			template.Must(layoutTemplate.Clone()), string(html))
 
 		if err := r.renderHtml(out, postTempl, args); err != nil {
 			log.Fatal(err)
@@ -196,8 +224,13 @@ func main() {
 		"templates/index.html",
 		"templates/footer.html",
 		"templates/structure.css"))
-	indexArgs := map[string]string{
-		"CurrentYear": strconv.Itoa(time.Now().Year()),
+
+	indexArgs := struct {
+		CurrentYear string
+		Posts       map[string]string
+	}{
+		CurrentYear: strconv.Itoa(time.Now().Year()),
+		Posts:       postFiles,
 	}
 	if err := r.renderHtml(indexOut, indexTempl, indexArgs); err != nil {
 		log.Fatal(err)

@@ -2,6 +2,8 @@
 <h1>Posts</h1>
 <hr />
 <section>
-  <h2><a href="/lipsum.html">Lorem Ipsum</a></h2>
+  {{ range $key, $value := .Posts }}
+    <h2><a href="/{{ $value }}">{{ $key }}</a></h2>
+  {{ end }}
 </section>
 {{end}}
