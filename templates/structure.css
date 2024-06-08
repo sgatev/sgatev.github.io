@@ -42,6 +42,10 @@ a {
   color: white;
 }
 
+body.dark-mode pre {
+  background-color: black;
+}
+
 #dark-mode-toggle {
   top: 1rem;
   right: 1rem;

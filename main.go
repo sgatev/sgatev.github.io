@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/alecthomas/chroma"
-	chromahtml "github.com/alecthomas/chroma/formatters/html"
-	"github.com/alecthomas/chroma/lexers"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2"
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	mdhtml "github.com/gomarkdown/markdown/html"
@@ -226,8 +226,9 @@ func main() {
 		"templates/structure.css"))
 
 	indexArgs := struct {
-		CurrentYear string
-		Posts       map[string]string
+		CurrentYear        string
+		Posts              map[string]string
+		CodeHighlightStyle string
 	}{
 		CurrentYear: strconv.Itoa(time.Now().Year()),
 		Posts:       postFiles,
