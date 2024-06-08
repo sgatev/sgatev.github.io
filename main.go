@@ -194,8 +194,7 @@ func main() {
 				parser.NoEmptyLineBeforeBlock)
 		doc := p.Parse(md)
 
-		outFile := strings.Replace(post.Name(), "md", "html", 1)
-		postFiles[getTitle(doc)] = outFile
+		postFiles[getTitle(doc)] = strings.Replace(post.Name(), ".md", "", 1)
 
 		mdr := mdhtml.NewRenderer(mdhtml.RendererOptions{
 			Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
@@ -203,7 +202,7 @@ func main() {
 		})
 		html := markdown.Render(doc, mdr)
 
-		out := filepath.Join(genDir, outFile)
+		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
 		args := map[string]string{
 			"CodeHighlightStyle": codeHighlightStyle.String(),
 			"Content":            string(html),
