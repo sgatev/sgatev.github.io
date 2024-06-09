@@ -121,6 +121,22 @@ func (p *htmlRenderer) renderHtml(
 	return ioutil.WriteFile(path, []byte(ms), 0644)
 }
 
+func (p *htmlRenderer) renderCss(
+	path string, templ *template.Template, args any) error {
+
+	var s strings.Builder
+	if err := templ.Execute(&s, args); err != nil {
+		return err
+	}
+
+	ms, err := p.m.String("text/css", s.String())
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, []byte(ms), 0644)
+}
+
 func makeHtmlRenderer() *htmlRenderer {
 	p := &htmlRenderer{}
 
@@ -165,9 +181,6 @@ func main() {
 		log.Fatal(fmt.Sprintf("chroma: couldn't find style '%s'", highlightStyleName))
 	}
 
-	var codeHighlightStyle strings.Builder
-	htmlCodeFormatter.WriteCSS(&codeHighlightStyle, highlightStyle)
-
 	const genDir = "gen"
 	if err := os.Mkdir(genDir, os.ModePerm); err != nil {
 		log.Fatal(err)
@@ -202,35 +215,49 @@ func main() {
 		html := markdown.Render(doc, mdr)
 
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
-		args := map[string]string{
-			"CodeHighlightStyle": codeHighlightStyle.String(),
-			"Content":            string(html),
-			"CurrentYear":        strconv.Itoa(time.Now().Year()),
+		templ := makePostTemplate(template.Must(layoutTemplate.Clone()), string(html))
+		args := struct {
+			CurrentYear string
+		}{
+			CurrentYear: strconv.Itoa(time.Now().Year()),
 		}
-
-		postTempl := makePostTemplate(
-			template.Must(layoutTemplate.Clone()), string(html))
-
-		if err := r.renderHtml(out, postTempl, args); err != nil {
+		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	indexOut := filepath.Join(genDir, "index.html")
-	indexTempl := template.Must(template.ParseFiles(
-		"templates/layout.html",
-		"templates/index.html",
-		"templates/layout.css"))
-
-	indexArgs := struct {
-		CurrentYear        string
-		Posts              map[string]string
-		CodeHighlightStyle string
-	}{
-		CurrentYear: strconv.Itoa(time.Now().Year()),
-		Posts:       postFiles,
+	// index.html
+	{
+		out := filepath.Join(genDir, "index.html")
+		templ := template.Must(template.ParseFiles(
+			"templates/layout.html", "templates/index.html"))
+		args := struct {
+			CurrentYear string
+			Posts       map[string]string
+		}{
+			CurrentYear: strconv.Itoa(time.Now().Year()),
+			Posts:       postFiles,
+		}
+		if err := r.renderHtml(out, templ, args); err != nil {
+			log.Fatal(err)
+		}
 	}
-	if err := r.renderHtml(indexOut, indexTempl, indexArgs); err != nil {
-		log.Fatal(err)
+
+	// layout.css
+	{
+		var codeHighlightStyle strings.Builder
+		htmlCodeFormatter.WriteCSS(&codeHighlightStyle, highlightStyle)
+
+		out := filepath.Join(genDir, "layout.css")
+		templ := template.Must(template.ParseFiles(
+			"templates/layout.css"))
+		args := struct {
+			CodeHighlightStyle string
+		}{
+			CodeHighlightStyle: codeHighlightStyle.String(),
+		}
+		if err := r.renderCss(out, templ, args); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

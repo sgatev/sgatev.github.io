@@ -1,4 +1,3 @@
-{{define "layout_style"}}
 body {
   padding-left: 1.5em;
   padding-right: 1.5em;
@@ -60,4 +59,5 @@ body.dark-mode pre {
   outline: inherit;
   display: none;
 }
-{{end}}
+
+{{.CodeHighlightStyle}}
