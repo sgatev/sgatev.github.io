@@ -20,7 +20,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -217,9 +216,9 @@ func main() {
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
 		templ := makePostTemplate(template.Must(layoutTemplate.Clone()), string(html))
 		args := struct {
-			CurrentYear string
+			CurrentYear int
 		}{
-			CurrentYear: strconv.Itoa(time.Now().Year()),
+			CurrentYear: time.Now().Year(),
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)
@@ -232,10 +231,10 @@ func main() {
 		templ := template.Must(template.ParseFiles(
 			"templates/layout.html", "templates/index.html"))
 		args := struct {
-			CurrentYear string
+			CurrentYear int
 			Posts       map[string]string
 		}{
-			CurrentYear: strconv.Itoa(time.Now().Year()),
+			CurrentYear: time.Now().Year(),
 			Posts:       postFiles,
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
