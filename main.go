@@ -138,7 +138,7 @@ func makeHtmlRenderer() *htmlRenderer {
 func makeLayoutTemplate() *template.Template {
 	return template.Must(template.ParseFiles(
 		"templates/layout.html",
-		"templates/structure.css"))
+		"templates/layout.css"))
 }
 
 func makePostTemplate(
@@ -220,7 +220,7 @@ func main() {
 	indexTempl := template.Must(template.ParseFiles(
 		"templates/layout.html",
 		"templates/index.html",
-		"templates/structure.css"))
+		"templates/layout.css"))
 
 	indexArgs := struct {
 		CurrentYear        string
