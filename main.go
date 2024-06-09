@@ -19,7 +19,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -136,6 +135,22 @@ func (p *htmlRenderer) renderCss(
 	return ioutil.WriteFile(path, []byte(ms), 0644)
 }
 
+func (p *htmlRenderer) renderJs(
+	path string, templ *template.Template, args any) error {
+
+	var s strings.Builder
+	if err := templ.Execute(&s, args); err != nil {
+		return err
+	}
+
+	ms, err := p.m.String("text/js", s.String())
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, []byte(ms), 0644)
+}
+
 func makeHtmlRenderer() *htmlRenderer {
 	p := &htmlRenderer{}
 
@@ -144,8 +159,7 @@ func makeHtmlRenderer() *htmlRenderer {
 	p.m.Add("text/html", &minifyhtml.Minifier{
 		KeepEndTags: true,
 	})
-	p.m.AddFuncRegexp(
-		regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+	p.m.AddFunc("text/js", js.Minify)
 
 	return p
 }
@@ -256,6 +270,16 @@ func main() {
 			CodeHighlightStyle: codeHighlightStyle.String(),
 		}
 		if err := r.renderCss(out, templ, args); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// dark-mode.js
+	{
+		out := filepath.Join(genDir, "dark-mode.js")
+		templ := template.Must(template.ParseFiles(
+			"templates/dark-mode.js"))
+		if err := r.renderJs(out, templ, struct{}{}); err != nil {
 			log.Fatal(err)
 		}
 	}

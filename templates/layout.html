@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Posts by Stanislav Gatev." />
     <title>Posts</title>
-    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="layout.css" />
   </head>
   <body>
     <button id="dark-mode-toggle" onClick="toggleDarkMode()">☯&#xFE0E;</button>
@@ -18,23 +18,7 @@
         >Creative Commons Attribution License</a
       >
     </footer>
-    <script>
-      function darkModeEnabled() {
-        return localStorage.getItem("darkModeEnabled") === "true";
-      }
-
-      function setDarkMode(enabled) {
-        document.body.classList.toggle("dark-mode", enabled);
-        document.getElementById("dark-mode-toggle").style.display = "block";
-        localStorage.setItem("darkModeEnabled", enabled ? "true" : "false");
-      }
-
-      function toggleDarkMode() {
-        setDarkMode(!darkModeEnabled());
-      }
-
-      setDarkMode(darkModeEnabled());
-    </script>
+    <script src="dark-mode.js"></script>
   </body>
 </html>
 {{end}}
