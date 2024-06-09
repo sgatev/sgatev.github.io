@@ -138,7 +138,6 @@ func makeHtmlRenderer() *htmlRenderer {
 func makeLayoutTemplate() *template.Template {
 	return template.Must(template.ParseFiles(
 		"templates/layout.html",
-		"templates/footer.html",
 		"templates/structure.css"))
 }
 
@@ -221,7 +220,6 @@ func main() {
 	indexTempl := template.Must(template.ParseFiles(
 		"templates/layout.html",
 		"templates/index.html",
-		"templates/footer.html",
 		"templates/structure.css"))
 
 	indexArgs := struct {
