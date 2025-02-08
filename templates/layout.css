@@ -3,14 +3,8 @@ body {
   padding-right: 2.25rem;
   background-color: white;
   color: black;
-  font-family: "Arial", sans-serif;
+  font-family: "Lora", "Garamond", serif;
   line-height: 1.5rem;
-}
-
-h1,
-h2 {
-  font-family: "Garamond", serif;
-  font-weight: 400;
 }
 
 h1 {
