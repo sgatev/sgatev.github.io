@@ -22,6 +22,10 @@ article {
   margin-top: 3rem;
 }
 
+code {
+  font-family: "Fira Code", monospace;
+}
+
 footer {
   margin-bottom: 3rem;
 }
