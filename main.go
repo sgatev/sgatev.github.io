@@ -204,19 +204,19 @@ func main() {
 			log.Fatal(err)
 		}
 
+		postFiles[meta.Title] = strings.Replace(post.Name(), ".md", "", 1)
+
 		p := parser.NewWithExtensions(
 			parser.CommonExtensions |
 				parser.AutoHeadingIDs |
-				parser.NoEmptyLineBeforeBlock)
+				parser.NoEmptyLineBeforeBlock |
+				parser.Footnotes)
 		doc := p.Parse(md)
 
-		postFiles[meta.Title] = strings.Replace(post.Name(), ".md", "", 1)
-
-		mdr := mdhtml.NewRenderer(mdhtml.RendererOptions{
+		html := markdown.Render(doc, mdhtml.NewRenderer(mdhtml.RendererOptions{
 			Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
 			RenderNodeHook: mdToHtmlRenderHook,
-		})
-		html := markdown.Render(doc, mdr)
+		}))
 
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
 		templ := makePostTemplate(template.Must(template.ParseFiles(

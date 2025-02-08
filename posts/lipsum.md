@@ -1,11 +1,11 @@
 ---
 title: Lorem Ipsum
-date:  2025-02-08
+date: 2025-02-08
 ---
 
 ## Lorem ipsum dolor sit
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
+Lorem[^1] ipsum dolor sit amet, consectetur adipiscing elit. Integer
 vestibulum commodo ligula vitae laoreet. Nam mollis in nisi eget
 vulputate. Nulla eget euismod diam, eu tincidunt velit. Vivamus
 tincidunt odio lobortis elit laoreet, a imperdiet tellus congue. In id
@@ -55,3 +55,7 @@ quam vehicula, eu hendrerit sapien accumsan. Nullam venenatis tortor et
 semper semper. Maecenas sit amet mollis elit. Nullam in congue elit.
 Integer tincidunt nec justo non posuere. Donec vel erat in turpis
 tincidunt euismod.
+
+[^1]:
+    The word 'lorem', for example, isn't a real Latin word, it's a
+    shortened version of the word 'dolorem', meaning pain.
