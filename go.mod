@@ -11,4 +11,5 @@ require (
 require (
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/tdewolff/parse/v2 v2.7.14 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

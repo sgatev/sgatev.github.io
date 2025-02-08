@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/alecthomas/chroma/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
@@ -14,6 +15,7 @@ import (
 	"github.com/tdewolff/minify/v2/css"
 	minifyhtml "github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -28,6 +30,25 @@ var (
 	htmlCodeFormatter *chromahtml.Formatter
 	highlightStyle    *chroma.Style
 )
+
+type metadata struct {
+	Title string    `yaml:"title"`
+	Date  time.Time `yaml:"date"`
+}
+
+func extractMetadata(content []byte) (*metadata, []byte, error) {
+	parts := bytes.Split(content, []byte("---"))
+	if len(parts) != 3 {
+		return nil, nil, fmt.Errorf("Invalid syntax")
+	}
+
+	var meta metadata
+	if err := yaml.Unmarshal(parts[1], &meta); err != nil {
+		return nil, nil, err
+	}
+
+	return &meta, parts[2], nil
+}
 
 func renderTitle(w io.Writer, entering bool) {
 	if entering {
@@ -72,31 +93,6 @@ func mdToHtmlRenderHook(
 		return ast.GoToNext, true
 	}
 	return ast.GoToNext, false
-}
-
-func getTitle(doc ast.Node) string {
-	var title string
-	ast.WalkFunc(doc, func(node ast.Node, entering bool) ast.WalkStatus {
-		h, ok := node.(*ast.Heading)
-		if !ok {
-			return ast.GoToNext
-		}
-		if h.Level != 1 {
-			return ast.GoToNext
-		}
-		if len(h.Children) != 1 {
-			return ast.GoToNext
-		}
-
-		t, ok := h.Children[0].(*ast.Text)
-		if !ok {
-			return ast.GoToNext
-		}
-
-		title = string(t.Literal)
-		return ast.Terminate
-	})
-	return title
 }
 
 type htmlRenderer struct {
@@ -164,21 +160,11 @@ func makeHtmlRenderer() *htmlRenderer {
 	return p
 }
 
-func makeLayoutTemplate() *template.Template {
-	return template.Must(template.ParseFiles(
-		"templates/layout.html",
-		"templates/layout.css"))
-}
-
-func makePostTemplate(
-	layoutTempl *template.Template, content string) *template.Template {
-
-	return template.Must(layoutTempl.New("article").Parse(content)).Lookup("layout.html")
+func makePostTemplate(layoutTempl *template.Template) *template.Template {
+	return layoutTempl.Lookup("layout.html")
 }
 
 func main() {
-	layoutTemplate := makeLayoutTemplate()
-
 	r := makeHtmlRenderer()
 
 	htmlCodeFormatter = chromahtml.New(
@@ -213,13 +199,18 @@ func main() {
 			log.Fatal(err)
 		}
 
+		meta, md, err := extractMetadata(md)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		p := parser.NewWithExtensions(
 			parser.CommonExtensions |
 				parser.AutoHeadingIDs |
 				parser.NoEmptyLineBeforeBlock)
 		doc := p.Parse(md)
 
-		postFiles[getTitle(doc)] = strings.Replace(post.Name(), ".md", "", 1)
+		postFiles[meta.Title] = strings.Replace(post.Name(), ".md", "", 1)
 
 		mdr := mdhtml.NewRenderer(mdhtml.RendererOptions{
 			Flags:          mdhtml.CommonFlags | mdhtml.HrefTargetBlank,
@@ -228,11 +219,20 @@ func main() {
 		html := markdown.Render(doc, mdr)
 
 		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
-		templ := makePostTemplate(template.Must(layoutTemplate.Clone()), string(html))
+		templ := makePostTemplate(template.Must(template.ParseFiles(
+			"templates/post.html",
+			"templates/layout.html",
+			"templates/layout.css")))
 		args := struct {
+			Content     string
 			CurrentYear int
+			Date        string
+			Title       string
 		}{
+			Content:     string(html),
 			CurrentYear: time.Now().Year(),
+			Date:        meta.Date.Format("Jan 02, 2006"),
+			Title:       meta.Title,
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)

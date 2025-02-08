@@ -1,4 +1,7 @@
-# Lorem Ipsum
+---
+title: Lorem Ipsum
+date:  2025-02-08
+---
 
 ## Lorem ipsum dolor sit
 
