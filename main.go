@@ -21,6 +21,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -48,6 +49,12 @@ func extractMetadata(content []byte) (*metadata, []byte, error) {
 	}
 
 	return &meta, parts[2], nil
+}
+
+type post struct {
+	Title string
+	Path  string
+	Date  time.Time
 }
 
 func renderTitle(w io.Writer, entering bool) {
@@ -186,14 +193,14 @@ func main() {
 	}
 
 	const postsDir = "posts"
-	posts, err := os.ReadDir(postsDir)
+	postFiles, err := os.ReadDir(postsDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	postFiles := map[string]string{}
-	for _, post := range posts {
-		in := filepath.Join(postsDir, post.Name())
+	var posts []post
+	for _, postFile := range postFiles {
+		in := filepath.Join(postsDir, postFile.Name())
 		md, err := ioutil.ReadFile(in)
 		if err != nil {
 			log.Fatal(err)
@@ -204,7 +211,11 @@ func main() {
 			log.Fatal(err)
 		}
 
-		postFiles[meta.Title] = strings.Replace(post.Name(), ".md", "", 1)
+		posts = append(posts, post{
+			Title: meta.Title,
+			Path:  strings.Replace(postFile.Name(), ".md", "", 1),
+			Date:  meta.Date,
+		})
 
 		p := parser.NewWithExtensions(
 			parser.CommonExtensions |
@@ -218,7 +229,7 @@ func main() {
 			RenderNodeHook: mdToHtmlRenderHook,
 		}))
 
-		out := filepath.Join(genDir, strings.Replace(post.Name(), "md", "html", 1))
+		out := filepath.Join(genDir, strings.Replace(postFile.Name(), "md", "html", 1))
 		templ := makePostTemplate(template.Must(template.ParseFiles(
 			"templates/post.html",
 			"templates/layout.html",
@@ -238,6 +249,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+	sort.Slice(posts, func(i, j int) bool { return posts[i].Date.After(posts[j].Date) })
 
 	// index.html
 	{
@@ -246,10 +258,10 @@ func main() {
 			"templates/layout.html", "templates/index.html"))
 		args := struct {
 			CurrentYear int
-			Posts       map[string]string
+			Posts       []post
 		}{
 			CurrentYear: time.Now().Year(),
-			Posts:       postFiles,
+			Posts:       posts,
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)

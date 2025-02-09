@@ -22,6 +22,11 @@ article {
   margin-top: 3rem;
 }
 
+#posts {
+  list-style: none;
+  padding: 0;
+}
+
 code {
   display: block;
   margin-block-start: 1em;
