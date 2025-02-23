@@ -295,4 +295,30 @@ func main() {
 			log.Fatal(err)
 		}
 	}
+
+	// fonts
+	{
+		out := filepath.Join(genDir, "fonts")
+		if err := os.Mkdir(out, 0755); err != nil {
+			log.Fatal(err)
+		}
+
+		files, err := ioutil.ReadDir("fonts")
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, file := range files {
+			content, err := ioutil.ReadFile("fonts/" + file.Name())
+			if err != nil {
+				log.Fatal(err)
+
+			}
+
+			err = ioutil.WriteFile(out+"/"+file.Name(), content, 0755)
+			if err != nil {
+				log.Fatal(err)
+
+			}
+		}
+	}
 }
