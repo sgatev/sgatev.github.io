@@ -4,9 +4,9 @@ date: 2025-08-01
 ---
 
 Some systems are just too big for anyone to fully understand. So how do
-we still build and work with them? The time-tested strategy is divide
-and conquer: split the system into smaller pieces we can manage, then
-put them back together to solve the bigger problem. But splitting alone
+we still build and work on them? The time-tested strategy is divide and
+conquer: split the system into smaller pieces we can manage, then put
+them back together to solve the bigger problem. But splitting alone
 isn't enough. The value comes from *how* we split it and *how* we piece
 it back together.
 
@@ -26,13 +26,6 @@ specify the contract of each interface well, and to make sure that all
 modules in the system respect these contracts. That will enable us to
 build strong and scalable systems.
 
-In a modular system, contracts are what let us work with confidence.
-They give us freedom to replace how a module works inside, to loosen
-its requirements so it fits more use-cases, or to tighten its
-guarantees so others can rely on it more strongly. These kinds of
-changes remain local and do not ripple through the entire system.
-
-Modular systems are *fractal*. At a high level they consist of modules
-that are connected by interfaces. If we zoom in and look at a specific
-module, we see that we can apply the same strategy to simplify it
-further. Divide and conquer!
+Modular systems are *fractal*. At a high level they are  modules
+connected by interfaces. But if we zoom in on a specific module, we can
+apply the same strategy: divide and conquer!
