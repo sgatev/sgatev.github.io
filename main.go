@@ -17,7 +17,6 @@ import (
 	"github.com/tdewolff/minify/v2/js"
 	"gopkg.in/yaml.v2"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -119,7 +118,7 @@ func (p *htmlRenderer) renderHtml(
 		return err
 	}
 
-	return ioutil.WriteFile(path, []byte(ms), 0644)
+	return os.WriteFile(path, []byte(ms), 0644)
 }
 
 func (p *htmlRenderer) renderCss(
@@ -135,7 +134,7 @@ func (p *htmlRenderer) renderCss(
 		return err
 	}
 
-	return ioutil.WriteFile(path, []byte(ms), 0644)
+	return os.WriteFile(path, []byte(ms), 0644)
 }
 
 func (p *htmlRenderer) renderJs(
@@ -151,7 +150,7 @@ func (p *htmlRenderer) renderJs(
 		return err
 	}
 
-	return ioutil.WriteFile(path, []byte(ms), 0644)
+	return os.WriteFile(path, []byte(ms), 0644)
 }
 
 func makeHtmlRenderer() *htmlRenderer {
@@ -184,7 +183,7 @@ func main() {
 	const highlightStyleName = "bw"
 	highlightStyle = styles.Get(highlightStyleName)
 	if highlightStyle == nil {
-		log.Fatal(fmt.Sprintf("chroma: couldn't find style '%s'", highlightStyleName))
+		log.Fatalf("chroma: couldn't find style '%s'", highlightStyleName)
 	}
 
 	const genDir = "gen"
@@ -201,7 +200,7 @@ func main() {
 	var posts []post
 	for _, postFile := range postFiles {
 		in := filepath.Join(postsDir, postFile.Name())
-		md, err := ioutil.ReadFile(in)
+		md, err := os.ReadFile(in)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -318,21 +317,19 @@ func main() {
 			log.Fatal(err)
 		}
 
-		files, err := ioutil.ReadDir("fonts")
+		files, err := os.ReadDir("fonts")
 		if err != nil {
 			log.Fatal(err)
 		}
 		for _, file := range files {
-			content, err := ioutil.ReadFile("fonts/" + file.Name())
+			content, err := os.ReadFile("fonts/" + file.Name())
 			if err != nil {
 				log.Fatal(err)
-
 			}
 
-			err = ioutil.WriteFile(out+"/"+file.Name(), content, 0755)
+			err = os.WriteFile(out+"/"+file.Name(), content, 0755)
 			if err != nil {
 				log.Fatal(err)
-
 			}
 		}
 	}
