@@ -258,9 +258,11 @@ func main() {
 		args := struct {
 			CurrentYear int
 			Posts       []post
+			Title       string
 		}{
 			CurrentYear: time.Now().Year(),
 			Posts:       posts,
+			Title:       "Posts",
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)
@@ -274,8 +276,10 @@ func main() {
 			"templates/layout.html", "templates/404.html"))
 		args := struct {
 			CurrentYear int
+			Title       string
 		}{
 			CurrentYear: time.Now().Year(),
+			Title:       "Oops!",
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)
