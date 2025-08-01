@@ -268,6 +268,21 @@ func main() {
 		}
 	}
 
+	// 404.html
+	{
+		out := filepath.Join(genDir, "404.html")
+		templ := template.Must(template.ParseFiles(
+			"templates/layout.html", "templates/404.html"))
+		args := struct {
+			CurrentYear int
+		}{
+			CurrentYear: time.Now().Year(),
+		}
+		if err := r.renderHtml(out, templ, args); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	// layout.css
 	{
 		var codeHighlightStyle strings.Builder
