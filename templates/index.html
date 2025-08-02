@@ -1,13 +1,13 @@
-{{define "article"}}
+{{ define "article" }}
 <h1>{{.Title}}</h1>
 <hr />
 <ul id="posts">
   {{ range $post := .Posts }}
   <li>
-    <a href="/{{ $post.Path }}"
-      >{{ $post.Date.Format "Jan 02, 2006" }} &mdash; {{ $post.Title }}</a
-    >
+    <a href="/{{ $post.Path }}">
+      {{ $post.Date.Format "Jan 02, 2006" }} &mdash; {{ $post.Title }}
+    </a>
   </li>
   {{ end }}
 </ul>
-{{end}}
+{{ end }}

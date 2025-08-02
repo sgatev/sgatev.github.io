@@ -177,4 +177,4 @@ body.dark-mode pre {
   display: none;
 }
 
-{{.CodeHighlightStyle}}
+{{ .CodeHighlightStyle }}
