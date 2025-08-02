@@ -236,12 +236,12 @@ func main() {
 		args := struct {
 			Content     string
 			CurrentYear int
-			Date        string
+			Date        time.Time
 			Title       string
 		}{
 			Content:     string(html),
 			CurrentYear: time.Now().Year(),
-			Date:        meta.Date.Format("Jan 02, 2006"),
+			Date:        meta.Date,
 			Title:       meta.Title,
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {

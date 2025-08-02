@@ -1,6 +1,8 @@
 {{define "article"}}
+<time datetime="{{.Date.Format "2006-01-02" }}">
+  {{.Date.Format "Jan 02, 2006" }}
+</time>
 <h1>{{.Title}}</h1>
-{{.Date}}
 <hr />
 {{.Content}}
 {{end}}
