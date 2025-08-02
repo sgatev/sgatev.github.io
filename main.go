@@ -3,19 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/alecthomas/chroma/v2"
-	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
-	"github.com/alecthomas/chroma/v2/lexers"
-	"github.com/alecthomas/chroma/v2/styles"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/ast"
-	mdhtml "github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
-	"github.com/tdewolff/minify/v2"
-	"github.com/tdewolff/minify/v2/css"
-	minifyhtml "github.com/tdewolff/minify/v2/html"
-	"github.com/tdewolff/minify/v2/js"
-	"gopkg.in/yaml.v2"
 	"io"
 	"log"
 	"os"
@@ -24,6 +11,21 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/parser"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/js"
+	"gopkg.in/yaml.v2"
+
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	mdhtml "github.com/gomarkdown/markdown/html"
+	minifyhtml "github.com/tdewolff/minify/v2/html"
 )
 
 var (
