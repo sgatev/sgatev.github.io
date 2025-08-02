@@ -9,12 +9,12 @@ split the system into smaller pieces we can handle, then put them back together
 to solve the bigger problem. But splitting alone isn’t enough — the value lies
 in *how* we split it, and *how* we connect the parts.
 
-Good modular design is about *local reasoning*. You should be able to fully
-understand a module without having to figure out the whole system. You should
-be able to change a module without forcing changes everywhere else. That’s only
-possible with clear, stable boundaries between modules — in other words,
-well-defined *interfaces*. Interfaces aren’t just the glue that connects
-modules; they’re the abstraction that lets us make a few key assumptions and
+Good modular design is about enabling *local reasoning*. You should be able to
+fully understand a module without having to figure out the whole system. You
+should be able to change a module without forcing changes everywhere else.
+That’s only possible with clear, stable boundaries between modules — in other
+words, well-defined *interfaces*. Interfaces aren’t just the glue that connects
+modules; they are the abstraction that lets us make a few key assumptions and
 safely ignore the rest.
 
 We can think of an interface as a *contract* between suppliers and consumers.
