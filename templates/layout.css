@@ -136,9 +136,7 @@ article {
 }
 
 .post-date {
-  display: inline-block;
-  width: 6rem;
-  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 code {
