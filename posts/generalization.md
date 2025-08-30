@@ -1,5 +1,5 @@
 ---
-title: Universality
+title: Generalization
 date: 2025-08-30
 ---
 
