@@ -20,17 +20,17 @@ constraints to achieve speed, precision, or efficiency that general systems
 can’t match. A factory line designed to produce one kind of widget is far more
 efficient than a workshop that can make anything. A law tailored for a narrow
 case can be more effective than a broad rule. Within their intended context,
-specialized systems excel — but step outside that context, and they quickly lose
+specialized systems excel, but step outside that context, and they quickly lose
 their edge.
 
 That tension runs through every kind of design. We can make a tool that works in
 many contexts, or one that assumes strong patterns. We can build organizations
 around flexible roles, or lock in narrow expertise. The more assumptions we bake
-in, the more efficient we get — and the less adaptable we become.
+in, the more efficient we get and the less adaptable we become.
 
 The choice between generality and specialization depends both on context and on
 use. In stable, predictable environments, specialized systems can deliver
-unmatched efficiency — the more often they’re exercised, the more those
+unmatched efficiency. The more often they’re exercised, the more those
 efficiencies compound. But in shifting or uncertain conditions, general systems
 prove more resilient, even if they give up some performance. The right balance
 isn’t absolute; it’s shaped by where the system lives and how much it matters in
