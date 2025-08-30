@@ -5,7 +5,9 @@
   {{ range $post := .Posts }}
   <li>
     <a href="/{{ $post.Path }}">
-      {{ $post.Date.Format "Jan 02, 2006" }} &mdash; {{ $post.Title }}
+      <span class="post-date">{{ $post.Date.Format "Jan 02, 2006" }}</span>
+      <span>&mdash;</span>
+      <span>{{ $post.Title }}</span>
     </a>
   </li>
   {{ end }}
