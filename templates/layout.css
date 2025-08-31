@@ -130,6 +130,10 @@ article {
   margin-top: 3rem;
 }
 
+section {
+  display: inline-block;
+}
+
 #posts {
   list-style: none;
   padding: 0;
