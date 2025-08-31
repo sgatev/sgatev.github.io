@@ -10,7 +10,9 @@
   </head>
   <body>
     <button id="dark-mode-toggle" onClick="toggleDarkMode()">◐&#xFE0E;</button>
-    <article>{{ template "article" . }}</article>
+    <main>
+      <article>{{ template "article" . }}</article>
+    </main>
     <footer>
       <hr />
       © {{ .CurrentYear }} •

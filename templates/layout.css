@@ -119,7 +119,7 @@ h1 {
   margin-bottom: 1.5rem;
 }
 
-article,
+main,
 footer {
   max-width: 600px;
   margin-left: auto;
@@ -128,15 +128,14 @@ footer {
 
 article {
   margin-top: 3rem;
-}
-
-section {
   display: inline-block;
+  width: 100%;
 }
 
 #posts {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .post-date {
