@@ -169,7 +169,7 @@ body.dark-mode pre {
 #dark-mode-toggle {
   top: 1rem;
   right: 1rem;
-  position: fixed;
+  position: absolute;
   font: inherit;
   font-size: 1.2rem;
   background: none;
