@@ -113,7 +113,7 @@ body {
   margin: 3rem auto;
 
   /* Padding, necessary for mobile devices with smaller width. */
-  padding: auto 2.25rem;
+  padding: 0 2.25rem;
 }
 
 main,
