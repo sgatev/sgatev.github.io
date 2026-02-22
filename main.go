@@ -264,7 +264,7 @@ func main() {
 		}{
 			CurrentYear: time.Now().Year(),
 			Posts:       posts,
-			Title:       "Posts",
+			Title:       "Index",
 		}
 		if err := r.renderHtml(out, templ, args); err != nil {
 			log.Fatal(err)
